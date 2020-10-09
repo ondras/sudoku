@@ -1,0 +1,20 @@
+<html>
+	<head>
+		<link rel="stylesheet" href="style.css" type="text/css" />
+		<script type="text/javascript" src="sudoku.js"></script>
+	</head>
+	<body onload="init_page()">
+		<h1>Ondras's SUDOKU heuristic solver</h1>
+		<p>Please note:</p>
+		<ul>
+			<li>this is the heuristic ARRAY (fastest) version of SUDOKU solver</li>		
+			<li>click on any cell to change its value</li>
+			<li>this is a very CPU-intensive app. Your browser may offer you stopping the script. However, on a modern CPU, it takes only a fraction of second to find a solution.</li>
+		</ul>
+		
+		<table><tbody>
+		</tbody></table>
+		<p></p>
+		<input type="button" onclick="start_solving()" value="Solve" />
+	</body>
+</html>
