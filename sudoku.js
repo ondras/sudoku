@@ -141,14 +141,15 @@ function attach_edit(elm) {
 	var ref = function() {
 		var inp = document.createElement("input");
 		inp.setAttribute("size","1");
-		inp.setAttribute("type","text");
-		inp.style.width = "20px";
-		inp.style.border = "1px solid #000";
-		inp.style.textAlign = "center";
+		inp.setAttribute("type","number");
+		inp.setAttribute("min","1");
+		inp.setAttribute("max","9");
+		inp.classList.add("edit");
 		inp.value = elm.innerHTML;
 		while (elm.firstChild) { elm.removeChild(elm.firstChild); }
 		elm.appendChild(inp);
 		inp.focus();
+		inp.select()
 		var callback = function(event) {
 			var val = inp.value;
 			elm.removeChild(inp);
