@@ -27,10 +27,8 @@ table {
 	width: 100%;
 	border: none;
 	text-align: center;
-	min-height: 100%;
-	display: block;
 	font: inherit;
-	background-color: #ecf0ff;
+	background-color: transparent;
 }
 .edit::-webkit-outer-spin-button,
 .edit::-webkit-inner-spin-button {
