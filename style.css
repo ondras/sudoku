@@ -23,6 +23,23 @@ table {
 	font-family: verdana, arial;
 	font-size: x-large;
 }
+.edit {
+	width: 100%;
+	border: none;
+	text-align: center;
+	min-height: 100%;
+	display: block;
+	font: inherit;
+	background-color: #ecf0ff;
+}
+.edit::-webkit-outer-spin-button,
+.edit::-webkit-inner-spin-button {
+	-webkit-appearance: none;
+	margin: 0;
+}
+.edit[type='number'] {
+	-moz-appearance: textfield;
+}
 
 body {
 	font-family: bitstream vera sans, verdana, arial;
