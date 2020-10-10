@@ -149,6 +149,7 @@ function attach_edit(elm) {
 		while (elm.firstChild) { elm.removeChild(elm.firstChild); }
 		elm.appendChild(inp);
 		inp.focus();
+		inp.select()
 		var callback = function(event) {
 			var val = inp.value;
 			elm.removeChild(inp);
