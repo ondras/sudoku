@@ -1,3 +1,5 @@
+* { box-sizing: border-box; }
+
 td {
 	width: 50px;
 	height: 50px;
@@ -5,27 +7,19 @@ td {
 	border: 1px solid #000;
 	text-align: center;
 }
-.top {
-	border-top: 2px solid #000;
-}
-.bottom {
-	border-bottom: 2px solid #000;
-}
-.left {
-	border-left: 2px solid #000;
-}
-.right {
-	border-right: 2px solid #000;
-}
+
+.top { border-top: 2px solid #000; }
+.bottom { border-bottom: 2px solid #000; }
+.left { border-left: 2px solid #000; }
+.right { border-right: 2px solid #000; }
+
 table {
-	width: 450px;
 	border-collapse: collapse;
-	font-family: verdana, arial;
+	font-family: verdana, arial, sans-serif;
 	font-size: x-large;
 }
 
 body {
-	font-family: bitstream vera sans, verdana, arial;
+	font-family: bitstream vera sans, verdana, arial, sans-serif;
 	font-size: small;
-	_font-size: x-small;
 }

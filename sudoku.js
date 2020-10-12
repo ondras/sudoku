@@ -1,44 +1,47 @@
-var MAX = 9;
+const MAX = 9;
+let stats = {backtracks:0, iterations:0, time:0};
+let cells = [];
 
-var done = 0;
-var stats = {"backtracks":0,"iterations":0,"time":0};
+class Cell {
+	constructor(x, y, node) {
+		this.value = 0;
+		this.x = x;
+		this.y = y;
+		this.avail = [];
+		this.node = node;
+	}
 
-var free_cell = false; /* this is the cell we are working at */
-
-function Cell(x,y) {
-	this.value = 0;
-	this.x = x;
-	this.y = y;
-	this.avail = [];
-	this.countAvail = function() {
-		/* 
+	countAvail() {
+		/*
 			get values available for this cell
 			based on column, row and block values
 		*/
-		var free = [1,1,1,1,1,1,1,1,1,1]; /* MAX+1 values */
-		this.avail = [];
-		for (var i=0;i<MAX;i++) {
+		let free = [1,1,1,1,1,1,1,1,1,1]; // MAX+1 values
+
+		for (let i=0;i<MAX;i++) { // row
 			free[cells[i][this.y].value] = 0;
-		} /* row */
-		for (var j=0;j<MAX;j++) {
+		}
+
+		for (let j=0;j<MAX;j++) { // column
 			free[cells[this.x][j].value] = 0;
-		} /* column */
-		/* block - more difficult */
-		var start_x = (this.x < 3 ? 0 : this.x > 5 ? 6 : 3);
-		var start_y = (this.y < 3 ? 0 : this.y > 5 ? 6 : 3);
-		var end_x = start_x+3;
-		var end_y = start_y+3;
-		for (var i=start_x;i<end_x;i++)
-			for (var j=start_y;j<end_y;j++) {
+		}
+
+		// block - more difficult
+		let start_x = (this.x < 3 ? 0 : this.x > 5 ? 6 : 3);
+		let start_y = (this.y < 3 ? 0 : this.y > 5 ? 6 : 3);
+		let end_x = start_x+3;
+		let end_y = start_y+3;
+		for (let i=start_x;i<end_x;i++)
+			for (let j=start_y;j<end_y;j++) {
 				free[cells[i][j].value] = 0;
 			}
-		
-		/* finish */
-		for (var i=1;i<=MAX;i++) {
+
+		// finish
+		this.avail = [];
+		for (let i=1;i<=MAX;i++) {
 			if (free[i]) { this.avail.push(i); }
 		}
 	}
-	
 }
 
 function solve() {
@@ -47,201 +50,158 @@ alert(free_cell.x+' '+free_cell.y+' '+free_cell.avail.length);
 return;
 */
 	stats.iterations++;
-	/* main recursive routine */
-	if (!free_cell) { done = 1; } /* no free cell to fill - victory */
-	if (done) { return; } /* shut down after successful run */
-	
-	var cell = free_cell; /* work with this cell */
-	var len = cell.avail.length; /* this many options */
+
+	let cell = get_free_candidate();
+	if (!cell) { return true; } // no free cell to fill - victory
+
+	let len = cell.avail.length; // this many options
 	if (!len) {
 		stats.backtracks++;
-		return; /* backtrack */
+		return false; // backtrack
 	}
-	
-	for (var i=0;i<len;i++) {
+
+	for (let i=0;i<len;i++) {
 		cell.value = cell.avail[i];
-		get_free_candidate();
-		solve();
-		if (done) return;
+		let solved = solve();
+		if (solved) { return true; }
 	}
-	cell.value = 0; /* return zero before leaving */
+
+	cell.value = 0; // return zero before leaving
+	return false;
 }
 
 function get_free_candidate() {
-	free_cell = false;
-	var min = MAX+1;
-	for (var i=0;i<MAX;i++) 
-		for (var j=0;j<MAX;j++) {
-			if(!(cells[i][j].value)) { 
-				cells[i][j].countAvail();
-				if (cells[i][j].avail.length < min) {
-					min = cells[i][j].avail.length;
-					free_cell = cells[i][j];
-				} /* if is lowest */
-			} /* if is empty */
-		} /* for all cells */
+	let best_cell = null;
+	let best = MAX+1;
+	for (let i=0;i<MAX;i++) {
+		for (let j=0;j<MAX;j++) {
+			let cell = cells[i][j];
+			if (cell.value) { continue; }
+
+			cell.countAvail();
+			if (cell.avail.length < best) {
+				best = cell.avail.length;
+				best_cell = cell;
+			}
+		}
+	}
+	return best_cell;
 }
 
 function start_solving() {
-	done = 0;
 	html2cells(); /* get input */
-	
-	var d1 = new Date();
-	var t1 = d1.getTime();
 
-	get_free_candidate();
-	solve();
-	
-	if (done) {
-		/* stats */
-		var d2 = new Date();
-		var t2 = d2.getTime();
+	let t1 = performance.now();
+	let solved = solve();
+	let t2 = performance.now();
+
+	if (solved) {
 		cells2html();
 		stats.time = (t2-t1)/1000;
-		var t = stats.time / 1000; /* seconds */
-		var score = stats.iterations / stats.time;
-		alert("BENCHMARK: "+Math.round(score*100)/100+" ips\n\n"+
-			  "iterations: "+stats.iterations+"\n"+
-			  "backtracks: "+stats.backtracks+"\n"+
-			  "time: "+stats.time+" s");
+		alert(`BENCHMARK: ${Math.round(stats.iterations/stats.time)} ips
+
+	iterations: ${stats.iterations}
+	backtracks: ${stats.backtracks}
+	time: ${stats.time} s`);
 	} else {
-		alert('No solution possible.');
+		alert("No solution possible.");
 	}
 }
 
-var cells = {};
-
-function attach(element,event,callback) {
-	if (element.addEventListener) {
-		/* gecko */
-		element.addEventListener(event,callback,false);
-	} else if (element.attachEvent) {
-		/* ie */
-		element.attachEvent("on"+event,callback);
-	} else {
-		/* ??? */
-		element["on"+event] = callback;
-	}
-}
-
-function detach(element,event,callback) {
-	if (element.removeEventListener) {
-		/* gecko */
-		element.removeEventListener(event,callback,false);
-	} else if (element.detachEvent) {
-		/* ie */
-		element.detachEvent("on"+event,callback);
-	} else {
-		/* ??? */
-		element["on"+event] = false;
-	}
-}
-
-function attach_edit(elm) {
-	var ref = function() {
-		var inp = document.createElement("input");
-		inp.setAttribute("size","1");
-		inp.setAttribute("type","text");
+function attach_edit(node) {
+	node.style.cursor = "pointer";
+	node.addEventListener("click", () => {
+		let inp = document.createElement("input");
+		inp.size = 1;
+		inp.type = "text";
 		inp.style.width = "20px";
 		inp.style.border = "1px solid #000";
 		inp.style.textAlign = "center";
-		inp.value = elm.innerHTML;
-		while (elm.firstChild) { elm.removeChild(elm.firstChild); }
-		elm.appendChild(inp);
+		inp.value = node.textContent;
+		node.innerHTML = "";
+		node.appendChild(inp);
 		inp.focus();
-		var callback = function(event) {
-			var val = inp.value;
-			elm.removeChild(inp);
-			elm.innerHTML = val;
-			detach(document,"mousedown",callback);
+
+		function done() {
+			node.innerHTML = "";
+			node.textContent = inp.value;
+			document.removeEventListener("mousedown", done);
 		}
-		attach(document,"mousedown",callback);
-	}
-	elm.style.cursor = "pointer";
-	attach(elm,"click",ref);
+		document.addEventListener("mousedown", done);
+	});
 }
 
 function init() {
-	for (var i=0;i<MAX;i++) {
-		cells[i] = [];
-		for (var j=0;j<MAX;j++) {
-			cells[i][j] = new Cell(i,j);
+	const table = document.querySelector("tbody");
+	for (let j=0;j<MAX;j++) {
+		let tr = table.insertRow();
+		let row = [];
+		cells.push(row);
+
+		for (let i=0;i<MAX;i++) {
+			let td = tr.insertCell();
+
+			if (i==3) { td.classList.add("left"); }
+			if (i==5) { td.classList.add("right"); }
+			if (j==3) { td.classList.add("top"); }
+			if (j==5) { td.classList.add("bottom"); }
+
+			attach_edit(td);
+
+			row.push(new Cell(j, i, td));
 		}
 	}
 }
 
 function cells2html() {
-	for (var i=0;i<MAX;i++)
-		for (var j=0;j<MAX;j++) {
-			var id = i+"_"+j;
-			document.getElementById(id).innerHTML = (cells[i][j].value ? cells[i][j].value : "");
+	for (let i=0;i<MAX;i++) {
+		for (let j=0;j<MAX;j++) {
+			cells[i][j].node.textContent = (cells[i][j].value ? cells[i][j].value : "");
 		}
+	}
 }
 
 function html2cells() {
-	for (var i=0;i<MAX;i++)
-		for (var j=0;j<MAX;j++) {
-			var id=i+"_"+j;
-			var val = document.getElementById(id).innerHTML;
-			var newval = parseInt(val);
-			cells[i][j].value = ( isNaN(newval) ? 0 : newval);
+	for (let i=0;i<MAX;i++) {
+		for (let j=0;j<MAX;j++) {
+			let cell = cells[i][j];
+			let val = Number(cell.node.textContent);
+			cells[i][j].value = (isNaN(val) ? 0 : val);
 		}
-	cells2html();
-}
-
-function init_page() {
-	init(); /* cells */
-	var table = document.getElementsByTagName("tbody")[0];
-	for (var j=0;j<MAX;j++) {
-		var tr = document.createElement("tr");
-		for (var i=0;i<MAX;i++) {
-			var id = i+"_"+j;
-			var td = document.createElement("td");
-			/* border stuff */
-			if (i==3) { td.className += " left "; }
-			if (i==5) { td.className += " right "; }
-			if (j==3) { td.className += " top "; }
-			if (j==5) { td.className += " bottom "; }
-			td.id = id;
-			attach_edit(td);
-			tr.appendChild(td);
-		}
-		table.appendChild(tr);
 	}
-	load_defaults();
 	cells2html();
 }
 
 function load_defaults() {
-	/* pre-made sudoku */
-	
-
-	
-	cells[1][0].value = 2;
-	cells[5][0].value = 8;
-	cells[8][0].value = 3;
-	cells[4][1].value = 4;
-	cells[2][2].value = 4;
-	cells[3][2].value = 9;
-	cells[6][2].value = 6;
-	cells[7][2].value = 1;
-	
-	cells[3][3].value = 6;
-	cells[4][3].value = 1;
-	cells[6][3].value = 4;
-	cells[6][4].value = 9;
-	cells[8][4].value = 5;
-	cells[1][5].value = 9;
-	cells[2][5].value = 3;
-	cells[8][5].value = 1;
-
-	cells[2][6].value = 6;
-	cells[3][6].value = 7;
-	cells[7][6].value = 2;
-	cells[8][6].value = 9;
-	cells[1][7].value = 1;
+	// pre-made sudoku
+	cells[0][1].value = 2;
+	cells[0][5].value = 8;
 	cells[0][8].value = 3;
+	cells[1][4].value = 4;
+	cells[2][2].value = 4;
+	cells[2][3].value = 9;
+	cells[2][6].value = 6;
+	cells[2][7].value = 1;
+
+	cells[3][3].value = 6;
+	cells[3][4].value = 1;
+	cells[3][6].value = 4;
+	cells[4][6].value = 9;
 	cells[4][8].value = 5;
-	cells[6][8].value = 7;
-	
+	cells[5][1].value = 9;
+	cells[5][2].value = 3;
+	cells[5][8].value = 1;
+
+	cells[6][2].value = 6;
+	cells[6][3].value = 7;
+	cells[6][7].value = 2;
+	cells[6][8].value = 9;
+	cells[7][1].value = 1;
+	cells[8][0].value = 3;
+	cells[8][4].value = 5;
+	cells[8][6].value = 7;
 }
+
+init();
+load_defaults();
+cells2html();
